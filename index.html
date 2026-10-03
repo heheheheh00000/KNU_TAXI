@@ -3,325 +3,567 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강남대 & 기흥역 실시간 번개 택시팟</title>
+    <title>같이타go~ | 강남대 & 기흥역 실시간 택시팟</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Pretendard -->
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         body { font-family: 'Pretendard', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 flex justify-center items-center min-h-screen m-0 p-0 sm:p-4">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <div class="w-full max-w-md h-screen sm:h-[860px] bg-slate-900 shadow-2xl flex flex-col relative overflow-hidden rounded-none sm:rounded-3xl border border-slate-800">
-        
-        <!-- App Header -->
-        <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-5 py-4 flex justify-between items-center z-20">
+    <!-- Top Header & Status Bar -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3.5 flex justify-between items-center">
             <div class="flex items-center space-x-2.5">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30 text-white font-black">
-                    <i data-lucide="zap" class="w-5 h-5 text-yellow-300 fill-yellow-300"></i>
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-inner font-bold text-lg flex items-center justify-center w-10 h-10">
+                    <i class="fa-solid fa-taxi text-amber-300"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
-                        강남대 택시팟 <span class="text-[10px] px-1.5 py-0.2 bg-blue-500/20 text-blue-400 rounded">실시간</span>
-                    </h1>
-                    <p class="text-[11px] text-slate-400">5분 내 초간단 현장 매칭 서비스</p>
+                    <h1 class="font-bold text-sm tracking-tight leading-tight">같이타go~</h1>
+                    <span id="auth-status-badge" class="inline-block text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full mt-0.5 font-medium">미인증</span>
                 </div>
             </div>
-            <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1 rounded-full text-xs font-medium border border-slate-700">
-                <span id="header-dot" class="w-2 h-2 rounded-full bg-red-400"></span>
-                <span id="auth-status-badge" class="text-slate-400 font-bold">미인증</span>
+            <div class="text-right">
+                <div class="inline-flex items-center bg-slate-800/90 px-2.5 py-1 rounded-full text-[11px] font-medium space-x-1.5 border border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="gps-status-text">위치 탐색 완료</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">기흥역 / 강남대역 반경 100m</div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <!-- Main Content Area with Tabs -->
-        <main class="flex-1 overflow-y-auto pb-24">
-            
-            <section id="tab-home" class="p-5 space-y-5">
-                <!-- GPS & Zone Status Card -->
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4 border border-blue-500/30 shadow-xl relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> GPS 자동인식 중
-                        </span>
-                        <span class="text-xs text-slate-400">정거장 100m 이내</span>
-                    </div>
-                    <div class="flex items-center justify-between mt-2">
-                        <div>
-                            <h2 class="text-sm font-bold text-white flex items-center gap-1">
-                                <i data-lucide="map-pin" class="w-4 h-4 text-blue-400"></i> 현장 실시간 매칭존
-                            </h2>
-                            <p class="text-xs text-slate-300 mt-0.5">현재 주변 대기 중인 학우 <span class="font-bold text-blue-400">14명</span></p>
-                        </div>
+    <!-- Main Content Container -->
+    <main class="max-w-md w-full mx-auto flex-1 pb-24 px-4 pt-4">
+
+        <!-- TAB 1: 매칭팟 (Matching & Creation) -->
+        <section id="tab-matching" class="space-y-4">
+            <!-- GPS Banner Notification -->
+            <div id="gps-banner" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 text-xs text-indigo-900 flex items-start space-x-3 shadow-sm">
+                <i class="fa-solid fa-location-crosshairs text-indigo-600 text-lg mt-0.5"></i>
+                <div>
+                    <strong class="font-semibold block mb-0.5">GPS 실시간 연동 완료</strong>
+                    <span id="gps-location-desc">현재 기흥역 택시정거장 반경 100m 이내 인식됨. 번개 팟 생성이 가능합니다!</span>
+                </div>
+            </div>
+
+            <!-- Taxi Pod Creation Card -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-route text-indigo-600"></i>
+                        <span>팟 경로 설정</span>
+                    </h2>
+                    <span class="text-[11px] bg-amber-50 text-amber-700 font-semibold px-2 py-1 rounded-lg border border-amber-200">실시간 매칭</span>
+                </div>
+
+                <!-- 출발지 선택 -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-600 block">출발지 선택</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="selectOrigin('기흥역 (택시정거장)')" id="origin-btn-1" class="origin-btn py-2.5 px-3 rounded-xl text-xs font-semibold border border-indigo-600 bg-indigo-50 text-indigo-700 transition flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-train-subway"></i>
+                            <span>기흥역 (택시정거장)</span>
+                        </button>
+                        <button type="button" onclick="selectOrigin('강남대역')" id="origin-btn-2" class="origin-btn py-2.5 px-3 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-train"></i>
+                            <span>강남대역</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Departure & Destination Settings -->
-                <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-800 space-y-4">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wide flex items-center gap-1.5">
-                        <i data-lucide="navigation" class="w-3.5 h-3.5 text-blue-400"></i> 팟 경로 설정
+                <!-- 목적지 선택 (강남대 건물) -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-600 block">목적지 (강남대 건물)</label>
+                    <select id="destination-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="샬롬관">샬롬관</option>
+                        <option value="인문사회관">인문사회관</option>
+                        <option value="예술관">예술관</option>
+                        <option value="후생관">후생관</option>
+                        <option value="우원관">우원관</option>
+                        <option value="본관">본관</option>
+                        <option value="이공관">이공관</option>
+                        <option value="경천관">경천관</option>
+                        <option value="천은관">천은관</option>
+                        <option value="교육관">교육관</option>
+                        <option value="목양관">목양관</option>
+                        <option value="기숙사(심전1관)">기숙사 (심전1관)</option>
+                        <option value="기숙사(심전2관)">기숙사 (심전2관)</option>
+                    </select>
+                </div>
+
+                <!-- 목표 인원 선택 -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-600 block">목표 인원</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="selectCapacity(2)" id="cap-btn-2" class="cap-btn py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 transition">2명</button>
+                        <button type="button" onclick="selectCapacity(3)" id="cap-btn-3" class="cap-btn py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 transition">3명</button>
+                        <button type="button" onclick="selectCapacity(4)" id="cap-btn-4" class="cap-btn py-2 rounded-xl text-xs font-semibold border border-indigo-50 bg-indigo-50 text-indigo-700 border-indigo-600 transition">4명 (최적)</button>
+                    </div>
+                </div>
+
+                <!-- 탑승 대기 시작 버튼 -->
+                <button onclick="startWaitingPod()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md shadow-indigo-100 transition text-xs flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-bolt-lightning text-amber-300"></i>
+                    <span>탑승 대기 시작 (GPS 자동인식)</span>
+                </button>
+            </div>
+
+            <!-- Active Pods List -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-users-line text-indigo-600"></i>
+                        <span>진행 중인 택시팟</span>
                     </h3>
-
-                    <!-- Departure Selector -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">출발지 선택</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" onclick="selectDeparture('기흥역')" id="dep-giheung" class="py-2.5 px-3 text-xs font-bold rounded-xl border transition-all bg-blue-600 text-white border-blue-500 shadow-sm">기흥역 (택시정거장)</button>
-                            <button type="button" onclick="selectDeparture('강남대역')" id="dep-gangnam" class="py-2.5 px-3 text-xs font-bold rounded-xl border transition-all bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">강남대역</button>
-                        </div>
-                    </div>
-
-                    <!-- Destination Selector (12 Buildings) -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">목적지 (강남대 건물 12선)</label>
-                        <select id="destination-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-3 text-xs font-semibold text-slate-200 focus:outline-none focus:border-blue-500">
-                            <option value="샬롬관">샬롬관</option>
-                            <option value="인문사회관">인문사회관</option>
-                            <option value="예술관">예술관</option>
-                            <option value="후생관">후생관</option>
-                            <option value="목양관">목양관</option>
-                            <option value="본관">본관</option>
-                            <option value="교육관">교육관</option>
-                            <option value="이공관">이공관</option>
-                            <option value="천은관">천은관</option>
-                            <option value="경천관">경천관</option>
-                            <option value="심전1관">심전1관</option>
-                            <option value="심전2관">심전2관</option>
-                        </select>
-                    </div>
-
-                    <!-- Target Capacity Selector -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">목표 동승 인원</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button type="button" onclick="selectTargetCount(2)" id="cnt-2" class="py-2 text-xs font-semibold rounded-xl border bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">2명 (1대1)</button>
-                            <button type="button" onclick="selectTargetCount(3)" id="cnt-3" class="py-2 text-xs font-semibold rounded-xl border bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">3명팟</button>
-                            <button type="button" onclick="selectTargetCount(4)" id="cnt-4" class="py-2 text-xs font-semibold rounded-xl border bg-blue-600/20 text-white border-blue-500 shadow-sm">4명팟 (추천)</button>
-                        </div>
-                    </div>
-
-                    <!-- Action Button -->
-                    <button onclick="toggleMatching()" id="match-action-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center space-x-2 text-xs">
-                        <i data-lucide="radio" class="w-4 h-4"></i>
-                        <span id="match-btn-text">[탑승 대기] 시작하기</span>
+                    <button onclick="refreshPods()" class="text-xs text-slate-500 hover:text-indigo-600 flex items-center space-x-1 transition font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-sm">
+                        <i id="refresh-icon" class="fa-solid fa-rotate"></i>
+                        <span>새로고침</span>
                     </button>
                 </div>
 
-                <!-- Active Pots List -->
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center px-1">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wide">실시간 진행 중인 팟</h3>
-                        <span class="text-[11px] text-blue-400 font-semibold cursor-pointer" onclick="refreshPots()">새로고침 ↻</span>
-                    </div>
-                    <div id="active-pots-container" class="space-y-2.5">
-                        <!-- Dynamically populated -->
-                    </div>
+                <div id="active-pods-container" class="space-y-2.5">
+                    <!-- Dynamic Rendered Pods -->
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <section id="tab-history" class="p-5 space-y-4 hidden">
-                <h2 class="text-sm font-bold text-white">나의 택시팟 이용 내역</h2>
-                <div id="history-list-container" class="space-y-3">
-                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-sm space-y-2">
-                        <div class="flex justify-between items-center text-[11px]">
-                            <span class="text-slate-400">2026.10.03 (금) 14:20</span>
-                            <span class="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">매칭완료</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs font-bold text-white">
-                            <span>기흥역 ➔ 샬롬관</span>
-                            <span class="text-blue-400 font-mono">#강남대-K-7291</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400">참여 인원: 4명 완료 (각 ₩1,200 결제)</div>
-                    </div>
-                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-sm space-y-2">
-                        <div class="flex justify-between items-center text-[11px]">
-                            <span class="text-slate-400">2026.09.30 (화) 09:10</span>
-                            <span class="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">매칭완료</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs font-bold text-white">
-                            <span>강남대역 ➔ 이공관</span>
-                            <span class="text-blue-400 font-mono">#강남대-G-4120</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400">참여 인원: 3명 완료</div>
-                    </div>
+        <!-- TAB 2: 이용내역 (Usage History) -->
+        <section id="tab-history" class="space-y-4 hidden">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+                <div class="border-b border-slate-100 pb-3">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                        <span>나의 택시팟 이용 내역</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">매칭 완료 및 정산 완료된 탑승 기록입니다.</p>
                 </div>
-            </section>
 
-            <section id="tab-auth" class="p-5 space-y-5 hidden">
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm text-center space-y-4">
-                    <div class="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto border border-blue-500/20">
-                        <i data-lucide="shield-check" class="w-7 h-7"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-sm font-bold text-white">강남대학교 재학생 인증</h2>
-                        <p class="text-xs text-slate-400 mt-1">안전한 매칭을 위해 포털 계정으로 인증합니다.</p>
-                    </div>
-
-                    <!-- Auth Form (Visible when unauthenticated) -->
-                    <div id="auth-form-area" class="space-y-3 text-left">
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">학번</label>
-                            <input type="text" id="auth-id" placeholder="예: 20241234" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                <div class="space-y-3" id="history-list-container">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-500 font-medium">2026.10.03 (금) 14:20</span>
+                            <span class="bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded text-[11px]">매칭완료</span>
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">이름</label>
-                            <input type="text" id="auth-name" placeholder="본인 이름 입력" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                        <div class="flex items-center justify-between text-sm font-bold text-slate-800">
+                            <span>기흥역</span>
+                            <i class="fa-solid fa-arrow-right text-xs text-indigo-400 mx-2"></i>
+                            <span>샬롬관</span>
                         </div>
-                        <button onclick="completeAuth()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow transition text-xs mt-2">강남대 포털 인증하기</button>
-                    </div>
-
-                    <!-- Auth Success Card (Visible when authenticated, includes Revoke button) -->
-                    <div id="auth-success-card" class="hidden bg-blue-950/60 border border-blue-500/40 rounded-xl p-4 text-left space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-bold text-blue-400">강남대학교 모바일 학생증</span>
-                            <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">인증됨</span>
-                        </div>
-                        <div>
-                            <div id="display-name" class="text-sm font-bold text-white">사용자 이름</div>
-                            <div id="display-id" class="text-xs text-slate-300 mt-0.5">학번: 00000000</div>
-                        </div>
-                        <div class="pt-2 border-t border-blue-500/20 flex justify-between items-center">
-                            <span class="text-[11px] text-slate-400">소속: 강남대학교 재학생</span>
-                            <button onclick="revokeAuth()" class="text-[11px] bg-slate-800 hover:bg-rose-950/50 text-rose-400 border border-rose-500/30 font-semibold px-3 py-1.5 rounded-lg transition-all shadow-sm">인증 해지하기</button>
+                        <div class="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-200/60">
+                            <span class="font-mono text-indigo-600 font-semibold">코드 #K194</span>
+                            <span>참여 인원: 4명 완료</span>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-        </main>
+        <!-- TAB 3: 학생인증 (Student Authentication) -->
+        <section id="tab-auth" class="space-y-4 hidden">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+                <div class="border-b border-slate-100 pb-3">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-id-card text-indigo-600"></i>
+                        <span>강남대학교 재학생 인증</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">포털 계정 연동을 통한 모바일 학생증 인증</p>
+                </div>
 
-        <nav class="absolute bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around items-center h-16 px-2 z-30">
-            <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-400 transition-colors">
-                <i data-lucide="zap" class="w-5 h-5 mb-1"></i>
-                <span class="text-[10px] font-bold">매칭팟</span>
-            </button>
-            <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 hover:text-slate-300 transition-colors">
-                <i data-lucide="clock-rotate-left" class="w-5 h-5 mb-1"></i>
-                <span class="text-[10px] font-medium">이용내역</span>
-            </button>
-            <button onclick="switchTab('auth')" id="nav-auth" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 hover:text-slate-300 transition-colors">
-                <i data-lucide="user-check" class="w-5 h-5 mb-1"></i>
-                <span class="text-[10px] font-medium">학생인증</span>
-            </button>
-        </nav>
+                <!-- Unauthenticated State View -->
+                <div id="auth-form-view" class="space-y-3.5">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600 block">학번 (9자리 숫자)</label>
+                        <input type="text" id="input-student-id" placeholder="예: 202612345" maxlength="9" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600 block">이름</label>
+                        <input type="text" id="input-student-name" placeholder="예: 홍길동" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button onclick="handlePortalAuth()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition text-xs flex items-center justify-center space-x-2 mt-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>강남대 포털 인증하기</span>
+                    </button>
+                </div>
 
+                <!-- Authenticated State View (Digital ID Card) -->
+                <div id="auth-success-view" class="hidden space-y-4">
+                    <div class="bg-gradient-to-br from-indigo-900 to-indigo-800 text-white rounded-2xl p-5 shadow-md relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-[10px] tracking-widest uppercase bg-indigo-500/60 px-2 py-0.5 rounded text-indigo-100 font-semibold">GDU Mobile ID</span>
+                                <h3 class="font-bold text-sm mt-1">강남대학교 모바일 학생증</h3>
+                            </div>
+                            <span class="bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-sm">
+                                <i class="fa-solid fa-check text-[10px]"></i>
+                                <span>인증됨</span>
+                            </span>
+                        </div>
+                        <div class="space-y-1 text-xs text-indigo-100 font-medium">
+                            <p>성명: <strong id="display-name" class="text-white text-sm font-bold">홍길동</strong></p>
+                            <p>학번: <strong id="display-id" class="text-white text-sm font-mono">202612345</strong></p>
+                            <p>소속: 강남대학교 학생</p>
+                        </div>
+                    </div>
+
+                    <button onclick="handleRevokeAuth()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-3 px-4 rounded-xl transition text-xs flex items-center justify-center space-x-2 border border-rose-200">
+                        <i class="fa-solid fa-user-slash"></i>
+                        <span>인증 해지하기</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Modal Box -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4 transform transition-all scale-95 opacity-0" id="modal-box-content">
+            <div class="flex items-center space-x-3">
+                <div id="modal-icon-container" class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                    <h3 id="modal-title" class="font-bold text-slate-900 text-sm">알림</h3>
+                    <p id="modal-message" class="text-xs text-slate-500 mt-0.5">안내 메시지</p>
+                </div>
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button id="modal-confirm-btn" onclick="closeModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs transition">확인</button>
+            </div>
+        </div>
     </div>
 
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 px-6 z-40 max-w-md mx-auto shadow-lg">
+        <div class="flex justify-around items-center">
+            <button onclick="switchTab('matching')" id="nav-btn-matching" class="flex flex-col items-center space-y-1 text-indigo-600 transition">
+                <i class="fa-solid fa-taxi text-lg"></i>
+                <span class="text-[11px] font-bold">매칭팟</span>
+            </button>
+            <button onclick="switchTab('history')" id="nav-btn-history" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+                <span class="text-[11px] font-medium">이용내역</span>
+            </button>
+            <button onclick="switchTab('auth')" id="nav-btn-auth" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-id-card text-lg"></i>
+                <span class="text-[11px] font-medium">학생인증</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- JavaScript Application Logic -->
     <script>
-        lucide.createIcons();
+        const CAMPUS_BUILDINGS = [
+            "샬롬관", "인문사회관", "예술관", "후생관", "우원관", "본관", 
+            "이공관", "경천관", "천은관", "교육관", "목양관", "기숙사(심전1관)", "기숙사(심전2관)"
+        ];
+
+        const ORIGINS = ["기흥역 (택시정거장)", "강남대역"];
 
         let state = {
-            departure: '기흥역',
-            targetCount: 4,
-            isWaiting: false,
-            isAuthenticated: false
+            currentTab: 'matching',
+            origin: '기흥역 (택시정거장)',
+            capacity: 4,
+            isAuthenticated: false,
+            studentName: '',
+            studentId: '',
+            activePods: [],
+            history: [
+                { date: '2026.10.03 (금) 14:20', origin: '기흥역', destination: '샬롬관', code: '#K194', count: '4명 완료', status: '매칭완료' }
+            ]
         };
 
-        function selectDeparture(place) {
-            state.departure = place;
-            if(place === '기흥역') {
-                document.getElementById('dep-giheung').className = "py-2.5 px-3 text-xs font-bold rounded-xl border transition-all bg-blue-600 text-white border-blue-500 shadow-sm";
-                document.getElementById('dep-gangnam').className = "py-2.5 px-3 text-xs font-bold rounded-xl border transition-all bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700";
-            } else {
-                document.getElementById('dep-gangnam').className = "py-2.5 px-3 text-xs font-bold rounded-xl border transition-all bg-blue-600 text-white border-blue-500 shadow-sm";
-                document.getElementById('dep-giheung').className = "py-2.5 px-3 text-xs font-bold rounded-xl border transition-all bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700";
-            }
-        }
-
-        function selectTargetCount(cnt) {
-            state.targetCount = cnt;
-            [2, 3, 4].forEach(n => {
-                const btn = document.getElementById(`cnt-${n}`);
-                if(n === cnt) {
-                    btn.className = "py-2 text-xs font-semibold rounded-xl border bg-blue-600/20 text-white border-blue-500 shadow-sm";
-                } else {
-                    btn.className = "py-2 text-xs font-semibold rounded-xl border bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700";
-                }
-            });
-        }
+        window.onload = function() {
+            loadSavedState();
+            generateRandomPods();
+            updateUI();
+        };
 
         function switchTab(tabName) {
-            ['home', 'history', 'auth'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav-${t}`).className = "flex flex-col items-center justify-center flex-1 py-1 text-slate-500 hover:text-slate-300 transition-colors";
+            state.currentTab = tabName;
+            
+            document.getElementById('tab-matching').classList.add('hidden');
+            document.getElementById('tab-history').classList.add('hidden');
+            document.getElementById('tab-auth').classList.add('hidden');
+
+            ['matching', 'history', 'auth'].forEach(t => {
+                const btn = document.getElementById(`nav-btn-${t}`);
+                btn.className = 'flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition';
+                btn.querySelector('span:last-child').className = 'text-[11px] font-medium';
             });
+
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-            document.getElementById(`nav-${tabName}`).className = "flex flex-col items-center justify-center flex-1 py-1 text-blue-400 transition-colors font-bold";
+            const activeBtn = document.getElementById(`nav-btn-${tabName}`);
+            activeBtn.className = 'flex flex-col items-center space-y-1 text-indigo-600 transition';
+            activeBtn.querySelector('span:last-child').className = 'text-[11px] font-bold';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function toggleMatching() {
-            const dest = document.getElementById('destination-select').value;
-            state.isWaiting = !state.isWaiting;
-            const btn = document.getElementById('match-action-btn');
-            const btnText = document.getElementById('match-btn-text');
+        function selectOrigin(place) {
+            state.origin = place;
+            document.querySelectorAll('.origin-btn').forEach(btn => {
+                btn.className = 'origin-btn py-2.5 px-3 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition flex items-center justify-center space-x-1.5';
+            });
+            const selectedBtn = place.includes('기흥역') ? document.getElementById('origin-btn-1') : document.getElementById('origin-btn-2');
+            selectedBtn.className = 'origin-btn py-2.5 px-3 rounded-xl text-xs font-semibold border border-indigo-600 bg-indigo-50 text-indigo-700 transition flex items-center justify-center space-x-1.5';
             
-            if(state.isWaiting) {
-                btn.className = "w-full bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-rose-600/30 transition-all flex items-center justify-center space-x-2 text-xs";
-                btnText.innerText = `[${state.departure} ➔ ${dest}] 대기 취소하기`;
+            const gpsDesc = document.getElementById('gps-location-desc');
+            if (place.includes('기흥역')) {
+                gpsDesc.innerText = '현재 기흥역 택시정거장 반경 100m 이내 인식됨. 번개 팟 생성이 가능합니다!';
             } else {
-                btn.className = "w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center space-x-2 text-xs";
-                btnText.innerText = "[탑승 대기] 시작하기";
+                gpsDesc.innerText = '현재 강남대역 반경 100m 이내 인식됨. 번개 팟 생성이 가능합니다!';
             }
         }
 
-        function completeAuth() {
-            const id = document.getElementById('auth-id').value.trim();
-            const name = document.getElementById('auth-name').value.trim();
-            if(!id || !name) {
+        function selectCapacity(num) {
+            state.capacity = num;
+            document.querySelectorAll('.cap-btn').forEach(btn => {
+                btn.className = 'cap-btn py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 transition';
+            });
+            const selBtn = document.getElementById(`cap-btn-${num}`);
+            selBtn.className = 'cap-btn py-2 rounded-xl text-xs font-semibold border border-indigo-50 bg-indigo-50 text-indigo-700 border-indigo-600 transition';
+        }
+
+        function startWaitingPod() {
+            const destSelect = document.getElementById('destination-select');
+            const destination = destSelect.value;
+            const newCode = '#K' + Math.floor(100 + Math.random() * 900);
+
+            const newPod = {
+                code: newCode,
+                origin: state.origin,
+                destination: destination,
+                current: 1,
+                max: state.capacity,
+                status: '매칭 대기중'
+            };
+
+            state.activePods.unshift(newPod);
+            renderActivePods();
+            showCustomModal('탑승 대기 시작', `[${state.origin} ➔ ${destination}] 택시팟이 생성되었습니다. 코드(${newCode})`);
+        }
+
+        // Silent refresh without popup alert
+        function refreshPods() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('fa-spin');
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                generateRandomPods();
+                renderActivePods();
+            }, 300);
+        }
+
+        function generateRandomPods() {
+            const count = Math.floor(Math.random() * 5) + 1; // 1 to 5 pods
+            const newPods = [];
+            
+            for (let i = 0; i < count; i++) {
+                const randomOrigin = ORIGINS[Math.floor(Math.random() * ORIGINS.length)];
+                const randomDest = CAMPUS_BUILDINGS[Math.floor(Math.random() * CAMPUS_BUILDINGS.length)];
+                const randomCode = '#K' + Math.floor(100 + Math.random() * 900);
+                const maxCap = [2, 3, 4][Math.floor(Math.random() * 3)];
+                const currentCap = Math.floor(Math.random() * (maxCap - 1)) + 1;
+                const statusOptions = currentCap >= maxCap ? '마감 임박' : '매칭 대기중';
+
+                newPods.push({
+                    code: randomCode,
+                    origin: randomOrigin,
+                    destination: randomDest,
+                    current: currentCap,
+                    max: maxCap,
+                    status: statusOptions
+                });
+            }
+            state.activePods = newPods;
+        }
+
+        function joinPod(code, origin, dest) {
+            showCustomModal('택시팟 참여 완료', `택시팟(${code}) [${origin} ➔ ${dest}] 참여가 완료되었습니다!`);
+            
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${['일','월','화','수','목','금','토'][now.getDay()]}) ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            state.history.unshift({
+                date: dateStr,
+                origin: origin.includes('기흥역') ? '기흥역' : '강남대역',
+                destination: dest,
+                code: code,
+                count: '4명 완료',
+                status: '매칭완료'
+            });
+            renderHistory();
+        }
+
+        function handlePortalAuth() {
+            const sIdInput = document.getElementById('input-student-id').value.trim();
+            const sNameInput = document.getElementById('input-student-name').value.trim();
+
+            if (!sIdInput || !sNameInput) {
+                showCustomModal('입력 오류', '학번과 이름을 모두 입력해 주세요.');
                 return;
             }
+
+            const nineDigitRegex = /^\d{9}$/;
+            if (!nineDigitRegex.test(sIdInput)) {
+                showCustomModal('학번 형식 오류', '학번은 정확히 9자리 숫자여야 합니다. (예: 202612345)');
+                return;
+            }
+
             state.isAuthenticated = true;
-            document.getElementById('display-name').innerText = name;
-            document.getElementById('display-id').innerText = "학번: " + id;
+            state.studentId = sIdInput;
+            state.studentName = sNameInput;
 
-            document.getElementById('auth-form-area').classList.add('hidden');
-            document.getElementById('auth-success-card').classList.remove('hidden');
-            document.getElementById('auth-status-badge').innerText = "인증완료";
-            document.getElementById('auth-status-badge').className = "text-emerald-400 font-bold";
-            document.getElementById('header-dot').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+            saveState();
+            updateUI();
+            showCustomModal('인증 성공', `${sNameInput}님, 강남대학교 재학생 인증이 완료되었습니다!`);
         }
 
-        function revokeAuth() {
+        function handleRevokeAuth() {
             state.isAuthenticated = false;
-            document.getElementById('auth-id').value = '';
-            document.getElementById('auth-name').value = '';
-            document.getElementById('auth-success-card').classList.add('hidden');
-            document.getElementById('auth-form-area').classList.remove('hidden');
-            document.getElementById('auth-status-badge').innerText = "미인증";
-            document.getElementById('auth-status-badge').className = "text-slate-400 font-bold";
-            document.getElementById('header-dot').className = "w-2 h-2 rounded-full bg-red-400";
+            state.studentId = '';
+            state.studentName = '';
+
+            document.getElementById('input-student-id').value = '';
+            document.getElementById('input-student-name').value = '';
+
+            saveState();
+            updateUI();
+            showCustomModal('인증 해지', '모바일 학생증 인증이 해지되었습니다.');
         }
 
-        function refreshPots() {
-            const container = document.getElementById('active-pots-container');
-            container.innerHTML = `
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-[10px] font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-md border border-blue-500/30">기흥역 출발</span>
-                            <span class="text-xs font-bold text-white">➔ 샬롬관</span>
-                        </div>
-                        <p class="text-[11px] text-slate-400 mt-1">대기 인원: <span class="font-bold text-blue-400">3</span> / 4명</p>
-                    </div>
-                    <button class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold px-3 py-2 rounded-xl transition shadow">참여하기</button>
-                </div>
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-[10px] font-bold bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-md border border-purple-500/30">강남대역 출발</span>
-                            <span class="text-xs font-bold text-white">➔ 인문사회관</span>
-                        </div>
-                        <p class="text-[11px] text-slate-400 mt-1">대기 인원: <span class="font-bold text-blue-400">2</span> / 3명</p>
-                    </div>
-                    <button class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold px-3 py-2 rounded-xl transition shadow">참여하기</button>
-                </div>
-            `;
+        function updateUI() {
+            const badge = document.getElementById('auth-status-badge');
+            const formView = document.getElementById('auth-form-view');
+            const successView = document.getElementById('auth-success-view');
+
+            if (state.isAuthenticated) {
+                badge.innerText = '인증됨 (' + state.studentName + ')';
+                badge.className = 'inline-block text-[10px] bg-emerald-500 text-white px-2.5 py-0.5 rounded-full mt-0.5 font-bold';
+                
+                formView.classList.add('hidden');
+                successView.classList.remove('hidden');
+
+                document.getElementById('display-name').innerText = state.studentName;
+                document.getElementById('display-id').innerText = state.studentId;
+            } else {
+                badge.innerText = '미인증';
+                badge.className = 'inline-block text-[10px] bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full mt-0.5 font-medium';
+                
+                formView.classList.remove('hidden');
+                successView.classList.add('hidden');
+            }
+            renderActivePods();
+            renderHistory();
         }
 
-        refreshPots();
+        function renderActivePods() {
+            const container = document.getElementById('active-pods-container');
+            if (state.activePods.length === 0) {
+                container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-100">현재 생성된 실시간 팟이 없습니다. 새로고침을 눌러보세요!</div>`;
+                return;
+            }
+
+            container.innerHTML = state.activePods.map(pod => `
+                <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-indigo-100 transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-emerald-50 text-emerald-600 text-[11px] font-bold px-2 py-0.5 rounded-md">${pod.status}</span>
+                        <span class="text-xs text-slate-400 font-mono">코드 ${pod.code}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-800 mb-2">
+                        <span class="truncate max-w-[120px]">${pod.origin}</span>
+                        <i class="fa-solid fa-arrow-right text-xs text-indigo-400 mx-2"></i>
+                        <span class="truncate max-w-[120px]">${pod.destination}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-50">
+                        <div class="flex items-center space-x-1">
+                            <i class="fa-solid fa-user-group text-slate-400"></i>
+                            <span>참여 인원: <strong class="text-indigo-600">${pod.current}</strong>/${pod.max}명</span>
+                        </div>
+                        <button onclick="joinPod('${pod.code}', '${pod.origin}', '${pod.destination}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-semibold transition">참여하기</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list-container');
+            container.innerHTML = state.history.map(item => `
+                <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium">${item.date}</span>
+                        <span class="bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded text-[11px]">${item.status}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm font-bold text-slate-800">
+                        <span>${item.origin}</span>
+                        <i class="fa-solid fa-arrow-right text-xs text-indigo-400 mx-2"></i>
+                        <span>${item.destination}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-200/60">
+                        <span class="font-mono text-indigo-600 font-semibold">코드 ${item.code}</span>
+                        <span>참여 인원: ${item.count}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showCustomModal(title, message) {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box-content');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box-content');
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 150);
+        }
+
+        function saveState() {
+            localStorage.setItem('kgu_transit_state', JSON.stringify({
+                isAuthenticated: state.isAuthenticated,
+                studentId: state.studentId,
+                studentName: state.studentName,
+                history: state.history
+            }));
+        }
+
+        function loadSavedState() {
+            const saved = localStorage.getItem('kgu_transit_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state.isAuthenticated = parsed.isAuthenticated || false;
+                    state.studentId = parsed.studentId || '';
+                    state.studentName = parsed.studentName || '';
+                    if (parsed.history) state.history = parsed.history;
+                } catch (e) {
+                    console.error('Failed to load saved state', e);
+                }
+            }
+        }
     </script>
 </body>
 </html>
