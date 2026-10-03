@@ -31,9 +31,9 @@
             <div class="text-right">
                 <div class="inline-flex items-center bg-slate-800/90 px-2.5 py-1 rounded-full text-[11px] font-medium space-x-1.5 border border-slate-700">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span id="gps-status-text">위치 탐색 완료</span>
+                    <span id="gps-status-text">GPS 위치 탐색 완료</span>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-0.5">기흥역 / 강남대역 반경 100m</div>
+                <div id="distance-badge-text" class="text-[10px] text-slate-400 mt-0.5">반경 100m 이내 설정됨</div>
             </div>
         </div>
     </header>
@@ -43,21 +43,46 @@
 
         <!-- TAB 1: 매칭팟 (Matching & Creation) -->
         <section id="tab-matching" class="space-y-4">
-            <!-- GPS Banner Notification -->
+            <!-- GPS & Distance Banner Notification -->
             <div id="gps-banner" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 text-xs text-indigo-900 flex items-start space-x-3 shadow-sm">
                 <i class="fa-solid fa-location-crosshairs text-indigo-600 text-lg mt-0.5"></i>
                 <div>
-                    <strong class="font-semibold block mb-0.5">GPS 실시간 연동 완료</strong>
-                    <span id="gps-location-desc">현재 기흥역 택시정거장 반경 100m 이내 인식됨. 번개 팟 생성이 가능합니다!</span>
+                    <strong class="font-semibold block mb-0.5">실시간 GPS & 반경 연동</strong>
+                    <span id="gps-location-desc">선택된 반경 내 사용자들과 빠르게 매칭을 시작합니다.</span>
+                </div>
+            </div>
+
+            <!-- Waiting / Matching State Overlay View (Hidden by default) -->
+            <div id="waiting-overlay-card" class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-lg space-y-4 hidden">
+                <div class="flex justify-between items-center">
+                    <span class="bg-amber-400 text-slate-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full animate-pulse">탑승 대기 중</span>
+                    <button onclick="cancelWaiting()" class="text-xs text-slate-300 hover:text-white underline">대기 취소</button>
+                </div>
+                <div class="text-center py-4 space-y-2">
+                    <div class="w-12 h-12 bg-indigo-600/50 rounded-full flex items-center justify-center mx-auto text-xl text-amber-300 animate-spin">
+                        <i class="fa-solid fa-spinner"></i>
+                    </div>
+                    <h3 id="waiting-title" class="font-bold text-base">주변 동승자 찾는 중...</h3>
+                    <p id="waiting-desc" class="text-xs text-slate-300">잠시만 기다리시면 자동으로 매칭이 완료됩니다.</p>
+                </div>
+                <div class="bg-white/10 rounded-xl p-3 text-xs space-y-1.5 backdrop-blur-sm">
+                    <div class="flex justify-between text-slate-300">
+                        <span>출발지 ➔ 목적지</span>
+                        <strong id="wait-route-text" class="text-white">기흥역 ➔ 샬롬관</strong>
+                    </div>
+                    <div class="flex justify-between text-slate-300">
+                        <span>예상 N분의 1 요금</span>
+                        <strong id="wait-fare-text" class="text-amber-300">약 2,300원 /인</strong>
+                    </div>
                 </div>
             </div>
 
             <!-- Taxi Pod Creation Card -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+            <div id="creation-card" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                     <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
                         <i class="fa-solid fa-route text-indigo-600"></i>
-                        <span>팟 경로 설정</span>
+                        <span>택시 경로 설정</span>
                     </h2>
                     <span class="text-[11px] bg-amber-50 text-amber-700 font-semibold px-2 py-1 rounded-lg border border-amber-200">실시간 매칭</span>
                 </div>
@@ -77,10 +102,26 @@
                     </div>
                 </div>
 
+                <!-- 거리 반경 선택 (100m ~ 10km) -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-600 block flex justify-between items-center">
+                        <span>택시정거장 방면 거리 설정</span>
+                        <span class="text-[10px] text-indigo-600 font-normal">거리별 동승자 필터</span>
+                    </label>
+                    <select id="distance-select" onchange="updateDistanceFilter()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="100m">반경 100m 이내 (초근접)</option>
+                        <option value="500m">반경 500m 이내</option>
+                        <option value="1km">반경 1km 이내</option>
+                        <option value="2km">반경 2km 이내</option>
+                        <option value="5km">반경 5km 이내</option>
+                        <option value="10km">반경 10km 이내 (광역)</option>
+                    </select>
+                </div>
+
                 <!-- 목적지 선택 (강남대 건물) -->
                 <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-600 block">목적지 (강남대 건물)</label>
-                    <select id="destination-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select id="destination-select" onchange="calculateEstimatedFare()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="샬롬관">샬롬관</option>
                         <option value="인문사회관">인문사회관</option>
                         <option value="예술관">예술관</option>
@@ -97,9 +138,12 @@
                     </select>
                 </div>
 
-                <!-- 목표 인원 선택 -->
-                <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-600 block">목표 인원</label>
+                <!-- 목표 인원 & N분의 1 요금 안내 -->
+                <div class="space-y-2 pt-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-600">목표 인원</label>
+                        <span id="fare-preview-badge" class="text-[11px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-md border border-indigo-100">예상 N분의 1: 약 2,300원/인</span>
+                    </div>
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="selectCapacity(2)" id="cap-btn-2" class="cap-btn py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 transition">2명</button>
                         <button type="button" onclick="selectCapacity(3)" id="cap-btn-3" class="cap-btn py-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 transition">3명</button>
@@ -119,7 +163,7 @@
                 <div class="flex items-center justify-between px-1">
                     <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-1.5">
                         <i class="fa-solid fa-users-line text-indigo-600"></i>
-                        <span>진행 중인 택시팟</span>
+                        <span>진행 중인 같이 타go~</span>
                     </h3>
                     <button onclick="refreshPods()" class="text-xs text-slate-500 hover:text-indigo-600 flex items-center space-x-1 transition font-medium bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-sm">
                         <i id="refresh-icon" class="fa-solid fa-rotate"></i>
@@ -141,25 +185,11 @@
                         <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
                         <span>나의 택시팟 이용 내역</span>
                     </h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">매칭 완료 및 정산 완료된 탑승 기록입니다.</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">매칭 완료 및 N분의 1 정산이 완료된 탑승 기록입니다.</p>
                 </div>
 
                 <div class="space-y-3" id="history-list-container">
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
-                        <div class="flex justify-between items-center text-xs">
-                            <span class="text-slate-500 font-medium">2026.10.03 (금) 14:20</span>
-                            <span class="bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded text-[11px]">매칭완료</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm font-bold text-slate-800">
-                            <span>기흥역</span>
-                            <i class="fa-solid fa-arrow-right text-xs text-indigo-400 mx-2"></i>
-                            <span>샬롬관</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-200/60">
-                            <span class="font-mono text-indigo-600 font-semibold">코드 #K194</span>
-                            <span>참여 인원: 4명 완료</span>
-                        </div>
-                    </div>
+                    <!-- History rendered via JS -->
                 </div>
             </div>
         </section>
@@ -172,7 +202,7 @@
                         <i class="fa-solid fa-id-card text-indigo-600"></i>
                         <span>강남대학교 재학생 인증</span>
                     </h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">포털 계정 연동을 통한 모바일 학생증 인증</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">포털 계정 연동을 통한 모바일 학생증 인증 (학번 9자리 필수)</p>
                 </div>
 
                 <!-- Unauthenticated State View -->
@@ -199,7 +229,7 @@
                         </div>
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <span class="text-[10px] tracking-widest uppercase bg-indigo-500/60 px-2 py-0.5 rounded text-indigo-100 font-semibold">GDU Mobile ID</span>
+                                <span class="text-[10px] tracking-widest uppercase bg-indigo-500/60 px-2 py-0.5 rounded text-indigo-100 font-semibold">KNU Mobile ID</span>
                                 <h3 class="font-bold text-sm mt-1">강남대학교 모바일 학생증</h3>
                             </div>
                             <span class="bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-sm">
@@ -224,7 +254,59 @@
 
     </main>
 
-    <!-- Custom Modal Box -->
+    <!-- Real-time Chat Room Modal (Participating Users Only) -->
+    <div id="chat-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white rounded-2xl max-w-sm w-full h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Chat Header -->
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">
+                        <i class="fa-solid fa-comments text-amber-300"></i>
+                    </div>
+                    <div>
+                        <h3 id="chat-room-title" class="font-bold text-xs">같이 타go~ 대화방</h3>
+                        <span id="chat-room-code" class="text-[10px] text-indigo-300 font-mono">코드 #K194 • 4명 참여중</span>
+                    </div>
+                </div>
+                <button onclick="closeChatRoom()" class="text-slate-400 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- N분의 1 Settlement Banner in Chat -->
+            <div class="bg-amber-50 border-b border-amber-100 px-4 py-2.5 flex justify-between items-center text-[11px]">
+                <div class="flex items-center space-x-1.5 text-amber-900 font-medium">
+                    <i class="fa-solid fa-calculator text-amber-600"></i>
+                    <span>택시 요금 N분의 1 정산</span>
+                </div>
+                <strong id="chat-fare-text" class="text-amber-700 font-bold">약 2,300원 /인</strong>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 text-xs">
+                <div class="text-center my-2">
+                    <span class="bg-slate-200/80 text-slate-600 text-[10px] px-2.5 py-1 rounded-full font-medium">매칭이 완료되어 대화방이 개설되었습니다.</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-[11px]">매니저</div>
+                    <div class="bg-white border border-slate-200 p-2.5 rounded-xl rounded-tl-none shadow-sm max-w-[240px]">
+                        <p class="font-bold text-[10px] text-slate-500 mb-0.5">시스템봇</p>
+                        <p class="text-slate-700">안전하고 즐거운 택시 타기! 기흥역 택시 정거장에서 탑승 위치를 확인하세요.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <div class="p-3 bg-white border-t border-slate-200 flex items-center space-x-2">
+                <input type="text" id="chat-input" onkeydown="if(event.key==='Enter') sendChatMessage()" placeholder="동승자들과 대화하기..." class="flex-1 bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button onclick="sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white w-10 h-10 rounded-xl flex items-center justify-center transition shadow-sm">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Modal Box -->
     <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4 transform transition-all scale-95 opacity-0" id="modal-box-content">
             <div class="flex items-center space-x-3">
@@ -272,19 +354,24 @@
         let state = {
             currentTab: 'matching',
             origin: '기흥역 (택시정거장)',
+            distanceRadius: '100m',
             capacity: 4,
             isAuthenticated: false,
             studentName: '',
             studentId: '',
             activePods: [],
             history: [
-                { date: '2026.10.03 (금) 14:20', origin: '기흥역', destination: '샬롬관', code: '#K194', count: '4명 완료', status: '매칭완료' }
-            ]
+                { date: '2026.10.03 (금) 14:20', origin: '기흥역', destination: '샬롬관', code: '#K194', count: '4명 완료', status: '매칭완료', fare: '2,300원' }
+            ],
+            waitingTimer: null,
+            currentChatPod: null,
+            chatMessages: []
         };
 
         window.onload = function() {
             loadSavedState();
             generateRandomPods();
+            calculateEstimatedFare();
             updateUI();
         };
 
@@ -318,11 +405,15 @@
             selectedBtn.className = 'origin-btn py-2.5 px-3 rounded-xl text-xs font-semibold border border-indigo-600 bg-indigo-50 text-indigo-700 transition flex items-center justify-center space-x-1.5';
             
             const gpsDesc = document.getElementById('gps-location-desc');
-            if (place.includes('기흥역')) {
-                gpsDesc.innerText = '현재 기흥역 택시정거장 반경 100m 이내 인식됨. 번개 팟 생성이 가능합니다!';
-            } else {
-                gpsDesc.innerText = '현재 강남대역 반경 100m 이내 인식됨. 번개 팟 생성이 가능합니다!';
-            }
+            gpsDesc.innerText = `현재 ${place} 반경 ${state.distanceRadius} 이내 선택됨. 매칭을 시작합니다.`;
+            calculateEstimatedFare();
+        }
+
+        function updateDistanceFilter() {
+            const select = document.getElementById('distance-select');
+            state.distanceRadius = select.value;
+            document.getElementById('distance-badge-text').innerText = `반경 ${state.distanceRadius} 이내 설정됨`;
+            document.getElementById('gps-location-desc').innerText = `선택된 반경(${state.distanceRadius}) 내 동승자들을 필터링 중입니다.`;
         }
 
         function selectCapacity(num) {
@@ -332,28 +423,66 @@
             });
             const selBtn = document.getElementById(`cap-btn-${num}`);
             selBtn.className = 'cap-btn py-2 rounded-xl text-xs font-semibold border border-indigo-50 bg-indigo-50 text-indigo-700 border-indigo-600 transition';
+            calculateEstimatedFare();
+        }
+
+        function calculateEstimatedFare() {
+            const dest = document.getElementById('destination-select').value;
+            // Base taxi meter simulation from station to campus (approx 4,800 KRW ~ 6,500 KRW)
+            let baseFare = 5200;
+            if (dest.includes('기숙사')) baseFare = 6100;
+            if (dest.includes('예술관') || dest.includes('목양관')) baseFare = 5800;
+
+            const splitFare = Math.round((baseFare / state.capacity) / 100) * 100;
+            const formatted = splitFare.toLocaleString() + '원';
+
+            document.getElementById('fare-preview-badge').innerText = `예상 N분의 1: 약 ${formatted}/인`;
+            return formatted;
         }
 
         function startWaitingPod() {
-            const destSelect = document.getElementById('destination-select');
-            const destination = destSelect.value;
+            const dest = document.getElementById('destination-select').value;
             const newCode = '#K' + Math.floor(100 + Math.random() * 900);
+            const fare = calculateEstimatedFare();
 
-            const newPod = {
-                code: newCode,
-                origin: state.origin,
-                destination: destination,
-                current: 1,
-                max: state.capacity,
-                status: '매칭 대기중'
-            };
+            // Hide creation card, show waiting overlay
+            document.getElementById('creation-card').classList.add('hidden');
+            document.getElementById('waiting-overlay-card').classList.remove('hidden');
+            document.getElementById('wait-route-text').innerText = `${state.origin} ➔ ${dest} (${state.distanceRadius})`;
+            document.getElementById('wait-fare-text').innerText = `약 ${fare} /인 (${state.capacity}인 기준)`;
 
-            state.activePods.unshift(newPod);
-            renderActivePods();
-            showCustomModal('탑승 대기 시작', `[${state.origin} ➔ ${destination}] 택시팟이 생성되었습니다. 코드(${newCode})`);
+            // Simulate automatic matching after 4 seconds
+            state.waitingTimer = setTimeout(() => {
+                document.getElementById('waiting-overlay-card').classList.add('hidden');
+                document.getElementById('creation-card').classList.remove('hidden');
+
+                // Add to history & open chat
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${['일','월','화','수','목','금','토'][now.getDay()]}) ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                
+                state.history.unshift({
+                    date: dateStr,
+                    origin: state.origin.includes('기흥역') ? '기흥역' : '강남대역',
+                    destination: dest,
+                    code: newCode,
+                    count: `${state.capacity}명 완료`,
+                    status: '매칭완료',
+                    fare: fare
+                });
+                renderHistory();
+
+                // Open chat room automatically
+                openChatRoom(newCode, state.origin, dest, state.capacity, fare);
+            }, 4000);
         }
 
-        // Silent refresh without popup alert
+        function cancelWaiting() {
+            if (state.waitingTimer) clearTimeout(state.waitingTimer);
+            document.getElementById('waiting-overlay-card').classList.add('hidden');
+            document.getElementById('creation-card').classList.remove('hidden');
+            showCustomModal('대기 취소', '탑승 대기가 취소되었습니다.');
+        }
+
         function refreshPods() {
             const icon = document.getElementById('refresh-icon');
             icon.classList.add('fa-spin');
@@ -366,7 +495,7 @@
         }
 
         function generateRandomPods() {
-            const count = Math.floor(Math.random() * 5) + 1; // 1 to 5 pods
+            const count = Math.floor(Math.random() * 4) + 1; // 1 to 4 pods
             const newPods = [];
             
             for (let i = 0; i < count; i++) {
@@ -375,7 +504,8 @@
                 const randomCode = '#K' + Math.floor(100 + Math.random() * 900);
                 const maxCap = [2, 3, 4][Math.floor(Math.random() * 3)];
                 const currentCap = Math.floor(Math.random() * (maxCap - 1)) + 1;
-                const statusOptions = currentCap >= maxCap ? '마감 임박' : '매칭 대기중';
+                const distanceOpt = ['100m', '500m', '1km', '2km'][Math.floor(Math.random() * 4)];
+                const fare = Math.round((5000 / maxCap) / 100) * 100 + '원';
 
                 newPods.push({
                     code: randomCode,
@@ -383,15 +513,16 @@
                     destination: randomDest,
                     current: currentCap,
                     max: maxCap,
-                    status: statusOptions
+                    distance: distanceOpt,
+                    fare: fare,
+                    status: currentCap >= maxCap ? '마감 임박' : '매칭 대기중'
                 });
             }
             state.activePods = newPods;
+            renderActivePods();
         }
 
-        function joinPod(code, origin, dest) {
-            showCustomModal('택시팟 참여 완료', `택시팟(${code}) [${origin} ➔ ${dest}] 참여가 완료되었습니다!`);
-            
+        function joinPod(code, origin, dest, maxCap, fare) {
             const now = new Date();
             const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${['일','월','화','수','목','금','토'][now.getDay()]}) ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             
@@ -400,10 +531,76 @@
                 origin: origin.includes('기흥역') ? '기흥역' : '강남대역',
                 destination: dest,
                 code: code,
-                count: '4명 완료',
-                status: '매칭완료'
+                count: `${maxCap}명 완료`,
+                status: '매칭완료',
+                fare: fare
             });
             renderHistory();
+            openChatRoom(code, origin, dest, maxCap, fare);
+        }
+
+        function openChatRoom(code, origin, dest, cap, fare) {
+            state.currentChatPod = { code, origin, dest, cap, fare };
+            document.getElementById('chat-room-title').innerText = `${origin} ➔ ${dest}`;
+            document.getElementById('chat-room-code').innerText = `코드 ${code} • ${cap}명 참여중`;
+            document.getElementById('chat-fare-text').innerText = `N분의 1 예상 요금: 약 ${fare} /인`;
+            
+            // Reset chat messages
+            state.chatMessages = [
+                { sender: '시스템봇', text: `[${code}] 팟 매칭이 완료되었습니다! 정산 금액은 약 ${fare} 입니다.` },
+                { sender: '동승자A', text: `안녕하세요! 기흥역 2번 출구 앞에서 만나요~` }
+            ];
+            renderChatMessages();
+            document.getElementById('chat-modal').classList.remove('hidden');
+        }
+
+        function closeChatRoom() {
+            document.getElementById('chat-modal').classList.add('hidden');
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const senderName = state.isAuthenticated ? state.studentName : '나 (익명)';
+            state.chatMessages.push({ sender: senderName, text: text, isMe: true });
+            input.value = '';
+            renderChatMessages();
+
+            // Simulate reply from peer
+            if (state.chatMessages.length === 3) {
+                setTimeout(() => {
+                    state.chatMessages.push({ sender: '동승자B', text: '좋습니다! 곧 도착해요.' });
+                    renderChatMessages();
+                }, 1000);
+            }
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = state.chatMessages.map(msg => {
+                if (msg.sender === '시스템봇') {
+                    return `
+                        <div class="text-center my-2">
+                            <span class="bg-indigo-50 text-indigo-700 text-[10px] px-3 py-1 rounded-full font-medium border border-indigo-100">${msg.text}</span>
+                        </div>
+                    `;
+                }
+                const isMe = msg.isMe;
+                return `
+                    <div class="flex items-start space-x-2 ${isMe ? 'flex-row-reverse space-x-reverse' : ''}">
+                        <div class="w-7 h-7 rounded-full ${isMe ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'} font-bold flex items-center justify-center text-[10px] shadow-sm">
+                            ${msg.sender.charAt(0)}
+                        </div>
+                        <div class="${isMe ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-700'} p-2.5 rounded-xl ${isMe ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm max-w-[240px]">
+                            <p class="font-bold text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-500'} mb-0.5">${msg.sender}</p>
+                            <p class="text-xs leading-relaxed">${msg.text}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
         }
 
         function handlePortalAuth() {
@@ -471,7 +668,7 @@
         function renderActivePods() {
             const container = document.getElementById('active-pods-container');
             if (state.activePods.length === 0) {
-                container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-100">현재 생성된 실시간 팟이 없습니다. 새로고침을 눌러보세요!</div>`;
+                container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-400 border border-slate-100">현재 조건에 맞는 팟이 없습니다. 새로고침을 눌러보세요!</div>`;
                 return;
             }
 
@@ -479,7 +676,10 @@
                 <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-indigo-100 transition">
                     <div class="flex justify-between items-start mb-2">
                         <span class="bg-emerald-50 text-emerald-600 text-[11px] font-bold px-2 py-0.5 rounded-md">${pod.status}</span>
-                        <span class="text-xs text-slate-400 font-mono">코드 ${pod.code}</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-medium"><i class="fa-solid fa-location-dot"></i> ${pod.distance}</span>
+                            <span class="text-xs text-slate-400 font-mono">${pod.code}</span>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between text-xs font-bold text-slate-800 mb-2">
                         <span class="truncate max-w-[120px]">${pod.origin}</span>
@@ -487,11 +687,11 @@
                         <span class="truncate max-w-[120px]">${pod.destination}</span>
                     </div>
                     <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-50">
-                        <div class="flex items-center space-x-1">
-                            <i class="fa-solid fa-user-group text-slate-400"></i>
-                            <span>참여 인원: <strong class="text-indigo-600">${pod.current}</strong>/${pod.max}명</span>
+                        <div class="flex items-center space-x-2">
+                            <span>인원: <strong class="text-indigo-600">${pod.current}</strong>/${pod.max}명</span>
+                            <span class="text-amber-600 font-semibold">(약 ${pod.fare}/인)</span>
                         </div>
-                        <button onclick="joinPod('${pod.code}', '${pod.origin}', '${pod.destination}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-semibold transition">참여하기</button>
+                        <button onclick="joinPod('${pod.code}', '${pod.origin}', '${pod.destination}', ${pod.max}, '${pod.fare}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-semibold transition">참여하기</button>
                     </div>
                 </div>
             `).join('');
@@ -499,6 +699,10 @@
 
         function renderHistory() {
             const container = document.getElementById('history-list-container');
+            if (state.history.length === 0) {
+                container.innerHTML = `<div class="text-center text-xs text-slate-400 py-6">이용 내역이 없습니다.</div>`;
+                return;
+            }
             container.innerHTML = state.history.map(item => `
                 <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
                     <div class="flex justify-between items-center text-xs">
@@ -512,7 +716,10 @@
                     </div>
                     <div class="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-200/60">
                         <span class="font-mono text-indigo-600 font-semibold">코드 ${item.code}</span>
-                        <span>참여 인원: ${item.count}</span>
+                        <div class="flex items-center space-x-2">
+                            <span>인원: ${item.count}</span>
+                            <span class="text-amber-700 font-bold">N분의 1: ${item.fare || '2,300원'}</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
