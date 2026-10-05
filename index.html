@@ -215,9 +215,9 @@
                 <div id="chat-messages" class="p-4 h-56 overflow-y-auto space-y-3 bg-slate-900/40 text-xs">
                     <div class="text-center text-slate-400 text-[11px] my-1">매칭된 팀원들과 대화를 시작하세요. (노쇼 방지 시스템 가동 중)</div>
                     <div class="flex items-start space-x-2">
-                        <div class="w-7 h-7 rounded-full bg-indigo-900 text-indigo-300 flex items-center justify-center font-bold text-xs border border-indigo-700">홍</div>
+                        <div class="w-7 h-7 rounded-full bg-indigo-900 text-indigo-300 flex items-center justify-center font-bold text-xs border border-indigo-700">익</div>
                         <div class="bg-slate-800 p-2.5 rounded-xl shadow-sm border border-slate-700 max-w-[80%]">
-                            <div class="font-bold text-indigo-400 mb-0.5">홍길동 <span class="text-[10px] text-slate-500">방금</span></div>
+                            <div class="font-bold text-indigo-400 mb-0.5">김민수 <span class="text-[10px] text-slate-500">방금</span></div>
                             <p class="text-slate-200">안녕하세요! 기흥역 정거장에서 5분 뒤에 뵙겠습니다.</p>
                         </div>
                     </div>
@@ -256,7 +256,7 @@
                     <i class="fa-solid fa-id-card text-indigo-400 mr-2"></i>강남대학교 재학생 인증
                 </h2>
                 <p class="text-xs text-slate-400 leading-relaxed">
-                    안전하고 신뢰도 높은 택시동승매칭을 위해 강남대학교 포털 계정 연동 및 학생증 인증을 진행해 주세요. (학번 9자리 필수)
+                    안전하고 신뢰도 높은 택시동승매칭을 위해 강남대학교 포털 계정 연동 및 학생증 인증을 진행해 주세요. (학번 9자리 및 본인 이름 입력)
                 </p>
 
                 <!-- Unverified Form -->
@@ -266,8 +266,8 @@
                         <input type="text" id="auth-student-id" placeholder="예: 202612345" maxlength="9" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">이름</label>
-                        <input type="text" id="auth-student-name" placeholder="예: 강냉이" value="강냉이" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">이름 (본인 이름 입력)</label>
+                        <input type="text" id="auth-student-name" placeholder="성함을 입력하세요" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <button onclick="verifyStudent()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-950 transition active:scale-[0.98]">
                         강남대 포털 인증하기
@@ -284,7 +284,7 @@
                         <span class="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">인증됨</span>
                     </div>
                     <div class="space-y-1 text-sm">
-                        <div class="flex justify-between"><span class="text-slate-400 text-xs">이름:</span><span id="display-auth-name" class="font-bold text-slate-100">강냉이</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400 text-xs">이름:</span><span id="display-auth-name" class="font-bold text-slate-100">홍길동</span></div>
                         <div class="flex justify-between"><span class="text-slate-400 text-xs">학번:</span><span id="display-auth-id" class="font-mono font-bold text-slate-100">202612345</span></div>
                         <div class="flex justify-between"><span class="text-slate-400 text-xs">소속:</span><span class="font-bold text-slate-100">강남대학교 학생</span></div>
                         <div class="flex justify-between"><span class="text-slate-400 text-xs">신용/매너온도:</span><span id="display-auth-temp" class="font-bold text-amber-300">36.5°C (신뢰 1등급)</span></div>
@@ -329,7 +329,7 @@
         let currentUser = {
             isVerified: false,
             studentId: '',
-            name: '강냉이',
+            name: '',
             mannerTemp: 36.5,
             darkMode: true
         };
@@ -381,11 +381,9 @@
             const icon = document.getElementById('dark-mode-icon');
 
             if (currentUser.darkMode) {
-                // Dark Mode (Deep Navy theme)
                 body.className = "bg-slate-900 text-slate-100 antialiased max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-x-hidden transition-colors duration-300";
                 icon.className = "fa-solid fa-moon";
             } else {
-                // Light Mode
                 body.className = "bg-slate-100 text-slate-800 antialiased max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative overflow-x-hidden transition-colors duration-300";
                 icon.className = "fa-solid fa-sun";
             }
@@ -432,6 +430,9 @@
             if (confirm('학생 인증을 해지하시겠습니까?')) {
                 currentUser.isVerified = false;
                 currentUser.studentId = '';
+                currentUser.name = '';
+                document.getElementById('auth-student-name').value = '';
+                document.getElementById('auth-student-id').value = '';
                 saveUserData();
                 updateAuthUI();
                 alert('인증이 해지되었습니다.');
@@ -465,7 +466,7 @@
             if (saved) {
                 currentUser = JSON.parse(saved);
                 document.getElementById('auth-student-id').value = currentUser.studentId || '';
-                document.getElementById('auth-student-name').value = currentUser.name || '강냉이';
+                document.getElementById('auth-student-name').value = currentUser.name || '';
                 if (currentUser.darkMode === undefined) currentUser.darkMode = true;
                 applyTheme();
                 updateAuthUI();
@@ -609,12 +610,12 @@
             msgDiv.className = "flex items-start space-x-2 justify-end";
             msgDiv.innerHTML = `
                 <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-sm max-w-[80%]">
-                    <div class="font-bold text-indigo-200 mb-0.5 text-right">${currentUser.name} (나)</div>
+                    <div class="font-bold text-indigo-200 mb-0.5 text-right">${currentUser.name || '나'} (나)</div>
                     <p>${text}</p>
                 </div>
             `;
             chatMessages.appendChild(msgDiv);
-            input.value = ``;
+            input.value = '';
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     </script>
