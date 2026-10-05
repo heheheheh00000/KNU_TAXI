@@ -35,10 +35,11 @@
                 <button onclick="toggleDarkMode()" id="dark-mode-btn" class="bg-indigo-900/80 border border-indigo-700/60 text-amber-300 p-2 rounded-full text-xs shadow hover:bg-indigo-800 transition" title="다크/라이트모드 전환">
                     <i class="fa-solid fa-moon" id="dark-mode-icon"></i>
                 </button>
-                <!-- Manner Temperature Badge -->
-                <div id="header-temp-badge" class="bg-indigo-900/80 border border-indigo-700/60 text-xs px-2.5 py-1.5 rounded-full flex items-center space-x-1 cursor-pointer shadow hover:bg-indigo-800 transition" onclick="alert('나의 매너 온도 및 신용 점수입니다. 칭찬을 받거나 안전 탑승 시 상승하며, 노쇼 시 하락합니다!')">
+                <!-- Manner Temperature & Badge -->
+                <div id="header-temp-badge" class="bg-indigo-900/80 border border-indigo-700/60 text-xs px-2.5 py-1.5 rounded-full flex items-center space-x-1 cursor-pointer shadow hover:bg-indigo-800 transition" onclick="switchTab('auth')">
                     <i class="fa-solid fa-temperature-three-quarters text-amber-400"></i>
                     <span id="header-temp-text" class="font-bold text-amber-300">36.5°C</span>
+                    <span id="header-badge-tag" class="text-[10px] bg-indigo-700 text-indigo-200 px-1.5 py-0.5 rounded-full font-bold ml-1">입문</span>
                 </div>
             </div>
         </div>
@@ -61,8 +62,25 @@
     <!-- Main Content Container -->
     <main class="flex-1 pb-24 overflow-y-auto p-4 space-y-4">
 
-        <!-- TAB 1: 매칭팟 (Matching / Create) -->
+        <!-- TAB 1: 매칭팟 (Matching / Create + Favorites + Shuttle Widget) -->
         <section id="tab-matching" class="space-y-4">
+            
+            <!-- (New 4번) Smart Shuttle & Transport Recommendation Banner -->
+            <div class="bg-gradient-to-r from-indigo-900/80 to-slate-800 border border-indigo-700/60 rounded-2xl p-4 shadow-sm space-y-2">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-bus text-amber-400"></i>
+                        <span class="text-xs font-bold text-indigo-200">캠퍼스 셔틀 & 동승 스마트 추천</span>
+                    </div>
+                    <button onclick="openShuttleModal()" class="text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-1 rounded-lg font-semibold hover:bg-indigo-900 transition">
+                        셔틀시간표 보기
+                    </button>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed" id="shuttle-recommend-text">
+                    💡 현재 시간 기준 기흥역 ➔ 강남대 대기줄 혼잡 예상! <strong>택시 동승 매칭 시 즉시 4인팟 구성 가능</strong>합니다.
+                </p>
+            </div>
+
             <!-- GPS Status Card -->
             <div class="bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-700/80 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -75,6 +93,28 @@
                     </div>
                 </div>
                 <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-1 rounded-lg font-bold">실시간 활성</span>
+            </div>
+
+            <!-- (New 3번) Favorites Quick Bar -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center px-1">
+                    <span class="text-xs font-bold text-slate-300 flex items-center">
+                        <i class="fa-solid fa-star text-amber-400 mr-1.5"></i>자주 쓰는 즐겨찾기 경로 (원클릭)
+                    </span>
+                    <button onclick="addCurrentToFavorites()" class="text-[11px] text-indigo-400 hover:underline font-medium">+ 현재 경로 저장</button>
+                </div>
+                <div id="favorites-container" class="grid grid-cols-2 gap-2">
+                    <!-- Default Favorite 1 -->
+                    <button onclick="quickSelectRoute('기흥역 (택시정거장)', '샬롬관', '500m')" class="bg-slate-800 hover:bg-indigo-950/60 border border-slate-700 hover:border-indigo-700 p-2.5 rounded-xl text-left transition flex flex-col justify-between shadow-sm">
+                        <div class="text-xs font-bold text-slate-200">기흥역 ➔ 샬롬관</div>
+                        <div class="text-[10px] text-indigo-400 mt-1">⭐ 원클릭 매칭 시작</div>
+                    </button>
+                    <!-- Default Favorite 2 -->
+                    <button onclick="quickSelectRoute('강남대역', '기숙사(심전1관)', '500m')" class="bg-slate-800 hover:bg-indigo-950/60 border border-slate-700 hover:border-indigo-700 p-2.5 rounded-xl text-left transition flex flex-col justify-between shadow-sm">
+                        <div class="text-xs font-bold text-slate-200">강남대역 ➔ 기숙사</div>
+                        <div class="text-[10px] text-indigo-400 mt-1">⭐ 원클릭 매칭 시작</div>
+                    </button>
+                </div>
             </div>
 
             <!-- Create / Search Form Card -->
@@ -181,7 +221,7 @@
             </div>
         </section>
 
-        <!-- TAB 2: 이용내역 & 채팅방 (History & Chat Room) -->
+        <!-- TAB 2: 이용내역 & 채팅방 (History & Chat Room + (New 1번) Settlement & Remittance) -->
         <section id="tab-history" class="space-y-4 hidden">
             <h2 class="text-base font-bold text-slate-100 flex items-center">
                 <i class="fa-solid fa-clock-rotate-left text-indigo-400 mr-2"></i>나의 택시동승매칭 이용 내역
@@ -205,14 +245,26 @@
                     </div>
                 </div>
 
-                <!-- Fare Splitting Info Bar -->
-                <div class="bg-slate-900/60 px-4 py-2 border-b border-slate-700 flex justify-between items-center text-xs">
-                    <span class="text-slate-400 font-medium"><i class="fa-solid fa-calculator text-indigo-400 mr-1"></i>예상 택시요금 N분의 1 정산: <strong id="chat-fare-per-person" class="text-indigo-400">4,800원/인</strong></span>
-                    <span class="text-emerald-400 font-bold"><i class="fa-solid fa-shield-halved mr-1"></i>보증금 안전 예치됨</span>
+                <!-- (New 1번) Fare Splitting & Remittance Bar -->
+                <div class="bg-slate-900 px-4 py-2.5 border-b border-slate-700 flex flex-col space-y-2 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-300 font-medium"><i class="fa-solid fa-calculator text-indigo-400 mr-1"></i>택시비 N분의 1 정산: <strong id="chat-fare-per-person" class="text-indigo-400 font-bold text-sm">4,800원/인</strong></span>
+                        <span class="text-emerald-400 font-bold"><i class="fa-solid fa-shield-halved mr-1"></i>보증금 안전 예치됨</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="openRemittance('toss')" class="bg-blue-600 hover:bg-blue-500 text-white py-1.5 px-3 rounded-xl font-semibold flex items-center justify-center space-x-1.5 shadow-sm transition">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>토스(Toss) 송금링크 복사</span>
+                        </button>
+                        <button onclick="openRemittance('kakaopay')" class="bg-amber-400 hover:bg-amber-300 text-slate-950 py-1.5 px-3 rounded-xl font-bold flex items-center justify-center space-x-1.5 shadow-sm transition">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            <span>카카오페이 송금하기</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Chat Messages Box -->
-                <div id="chat-messages" class="p-4 h-56 overflow-y-auto space-y-3 bg-slate-900/40 text-xs">
+                <div id="chat-messages" class="p-4 h-48 overflow-y-auto space-y-3 bg-slate-900/40 text-xs">
                     <div class="text-center text-slate-400 text-[11px] my-1">매칭된 팀원들과 대화를 시작하세요. (노쇼 방지 시스템 가동 중)</div>
                     <div class="flex items-start space-x-2">
                         <div class="w-7 h-7 rounded-full bg-indigo-900 text-indigo-300 flex items-center justify-center font-bold text-xs border border-indigo-700">익</div>
@@ -249,7 +301,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: 학생인증 (Student Verification) -->
+        <!-- TAB 3: 학생인증 & 프로필 (Student Verification & (New 5번) Manner Badge Level System) -->
         <section id="tab-auth" class="space-y-4 hidden">
             <div class="bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-700/80 space-y-4">
                 <h2 class="text-base font-bold text-slate-100 flex items-center">
@@ -274,7 +326,7 @@
                     </button>
                 </div>
 
-                <!-- Verified Mobile Student Card (Hidden by default) -->
+                <!-- Verified Mobile Student Card & (New 5번) Manner Badge Level System (Hidden by default) -->
                 <div id="auth-success-container" class="bg-gradient-to-br from-indigo-950 to-slate-950 border border-indigo-800 text-white rounded-2xl p-5 shadow-lg space-y-4 hidden">
                     <div class="flex justify-between items-center border-b border-white/10 pb-3">
                         <div class="flex items-center space-x-2">
@@ -283,12 +335,22 @@
                         </div>
                         <span class="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">인증됨</span>
                     </div>
-                    <div class="space-y-1 text-sm">
+                    <div class="space-y-1.5 text-sm">
                         <div class="flex justify-between"><span class="text-slate-400 text-xs">이름:</span><span id="display-auth-name" class="font-bold text-slate-100">홍길동</span></div>
                         <div class="flex justify-between"><span class="text-slate-400 text-xs">학번:</span><span id="display-auth-id" class="font-mono font-bold text-slate-100">202612345</span></div>
                         <div class="flex justify-between"><span class="text-slate-400 text-xs">소속:</span><span class="font-bold text-slate-100">강남대학교 학생</span></div>
-                        <div class="flex justify-between"><span class="text-slate-400 text-xs">신용/매너온도:</span><span id="display-auth-temp" class="font-bold text-amber-300">36.5°C (신뢰 1등급)</span></div>
+                        <div class="flex justify-between items-center"><span class="text-slate-400 text-xs">매너온도/뱃지:</span><div class="flex items-center space-x-1.5"><span id="display-auth-temp" class="font-bold text-amber-300">36.5°C</span><span id="display-badge-title" class="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full font-extrabold shadow-sm">입문 동승러</span></div></div>
                     </div>
+
+                    <!-- Badge Level Progress Bar (New 5번) -->
+                    <div class="bg-white/5 rounded-xl p-3 border border-white/10 space-y-1.5 text-xs">
+                        <div class="flex justify-between font-semibold"><span class="text-slate-300">동승 신뢰 등급 레벨</span><span id="badge-level-desc" class="text-amber-300">Level 1 (입문)</span></div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-white/10">
+                            <div id="badge-progress-bar" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-500" style="width: 35%;"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400" id="badge-next-tip">💡 안전 탑승 완료 및 지각 방지 시 매너 온도가 상승하여 '우수 동승 메이트' 뱃지로 진급합니다!</p>
+                    </div>
+
                     <button onclick="revokeVerification()" class="w-full bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold py-2 rounded-xl transition border border-white/10">
                         인증 해지하기
                     </button>
@@ -307,6 +369,32 @@
         </section>
 
     </main>
+
+    <!-- (New 4번) Shuttle Bus Schedule Modal Popup -->
+    <div id="shuttle-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-indigo-700/80 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-indigo-300 flex items-center">
+                    <i class="fa-solid fa-bus text-amber-400 mr-2"></i>강남대 셔틀버스 및 대중교통 안내
+                </h3>
+                <button onclick="closeShuttleModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs leading-relaxed">
+                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
+                    <div class="font-bold text-amber-300">🚌 기흥역 ➔ 강남대 순환 셔틀</div>
+                    <p class="text-slate-300">평일 08:30 ~ 18:30 (배차간격 약 15~20분)</p>
+                    <p class="text-[11px] text-slate-400">※ 등교 피크타임(08:50 ~ 09:30)에는 줄이 매우 길어지므로 <strong>택시 동승 4인팟</strong>이 가장 빠릅니다!</p>
+                </div>
+                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
+                    <div class="font-bold text-emerald-300">🚇 에버라인(강남대역) 도보 이동</div>
+                    <p class="text-slate-300">강남대역에서 학교 안쪽(샬롬관/경천관 등)까지 도보 약 15~20분 소요 (언덕길 주의)</p>
+                </div>
+            </div>
+            <button onclick="closeShuttleModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                확인 완료
+            </button>
+        </div>
+    </div>
 
     <!-- Bottom Navigation Bar -->
     <nav class="bg-slate-900 border-t border-slate-800 fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 flex justify-around py-3 shadow-lg">
@@ -331,7 +419,11 @@
             studentId: '',
             name: '',
             mannerTemp: 36.5,
-            darkMode: true
+            darkMode: true,
+            favorites: [
+                { start: '기흥역 (택시정거장)', dest: '샬롬관', radius: '500m' },
+                { start: '강남대역', dest: '기숙사(심전1관)', radius: '500m' }
+            ]
         };
 
         let waitingTimerInterval = null;
@@ -345,6 +437,7 @@
             loadUserData();
             refreshActivePods();
             startRealtimeClock();
+            renderFavoritesUI();
         };
 
         // Realtime Clock & Date (셔틀버스 스타일)
@@ -402,6 +495,72 @@
             document.getElementById('nav-' + tabName).className = "flex flex-col items-center space-y-1 text-indigo-400 font-bold transition";
         }
 
+        // (New 4번) Shuttle Modal Controls
+        function openShuttleModal() {
+            document.getElementById('shuttle-modal').classList.remove('hidden');
+        }
+        function closeShuttleModal() {
+            document.getElementById('shuttle-modal').classList.add('hidden');
+        }
+
+        // (New 3번) Favorites Route Functions
+        function addCurrentToFavorites() {
+            const start = document.getElementById('start-point').value;
+            const dest = document.getElementById('dest-building').value;
+            const radius = document.getElementById('distance-radius').value;
+
+            // 중복 체크
+            const exists = currentUser.favorites.some(f => f.start === start && f.dest === dest);
+            if (exists) {
+                alert('이미 즐겨찾기에 등록된 경로입니다!');
+                return;
+            }
+
+            currentUser.favorites.push({ start, dest, radius });
+            saveUserData();
+            renderFavoritesUI();
+            alert(`[${start} ➔ ${dest}] 경로가 즐겨찾기에 저장되었습니다!`);
+        }
+
+        function renderFavoritesUI() {
+            const container = document.getElementById('favorites-container');
+            container.innerHTML = '';
+
+            if (!currentUser.favorites || currentUser.favorites.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-xs text-slate-400 text-center py-2">저장된 즐겨찾기 경로가 없습니다.</div>`;
+                return;
+            }
+
+            currentUser.favorites.forEach((fav, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-slate-800 hover:bg-indigo-950/60 border border-slate-700 hover:border-indigo-700 p-2.5 rounded-xl text-left transition flex flex-col justify-between shadow-sm relative group";
+                btn.innerHTML = `
+                    <div class="text-xs font-bold text-slate-200">${fav.start.includes('기흥') ? '기흥역' : '강남대역'} ➔ ${fav.dest}</div>
+                    <div class="text-[10px] text-indigo-400 mt-1 flex justify-between items-center">
+                        <span>⭐ 원클릭 매칭</span>
+                        <span onclick="event.stopPropagation(); removeFavorite(${idx})" class="text-slate-500 hover:text-rose-400">✕ 삭제</span>
+                    </div>
+                `;
+                btn.onclick = () => quickSelectRoute(fav.start, fav.dest, fav.radius);
+                container.appendChild(btn);
+            });
+        }
+
+        function removeFavorite(idx) {
+            currentUser.favorites.splice(idx, 1);
+            saveUserData();
+            renderFavoritesUI();
+        }
+
+        function quickSelectRoute(start, dest, radius) {
+            document.getElementById('start-point').value = start;
+            document.getElementById('dest-building').value = dest;
+            document.getElementById('distance-radius').value = radius;
+            
+            // 바로 탑승 대기 시작
+            startWaitingQueue();
+        }
+
         function verifyStudent() {
             const sId = document.getElementById('auth-student-id').value.trim();
             const sName = document.getElementById('auth-student-name').value.trim();
@@ -439,7 +598,24 @@
             }
         }
 
+        // (New 5번) Manner Badge Level System UI Updater
         function updateAuthUI() {
+            const temp = currentUser.mannerTemp;
+            let badgeTitle = '입문 동승러';
+            let badgeColor = 'bg-amber-500 text-slate-950';
+            let levelText = 'Level 1 (입문)';
+            let progressPercent = Math.min(100, Math.max(10, ((temp - 36.5) / 5) * 100));
+
+            if (temp >= 40.0) {
+                badgeTitle = '🌟 전설의 메이트';
+                badgeColor = 'bg-emerald-400 text-slate-950';
+                levelText = 'Level 3 (마스터)';
+            } else if (temp >= 38.0) {
+                badgeTitle = '⭐ 우수 동승 메이트';
+                badgeColor = 'bg-indigo-400 text-slate-950';
+                levelText = 'Level 2 (우수)';
+            }
+
             if (currentUser.isVerified) {
                 document.getElementById('auth-form-container').classList.add('hidden');
                 document.getElementById('auth-success-container').classList.remove('hidden');
@@ -447,13 +623,21 @@
 
                 document.getElementById('display-auth-name').innerText = currentUser.name;
                 document.getElementById('display-auth-id').innerText = currentUser.studentId;
-                document.getElementById('display-auth-temp').innerText = currentUser.mannerTemp.toFixed(1) + '°C';
-                document.getElementById('header-temp-text').innerText = currentUser.mannerTemp.toFixed(1) + '°C';
+                document.getElementById('display-auth-temp').innerText = temp.toFixed(1) + '°C';
+                document.getElementById('display-badge-title').innerText = badgeTitle;
+                document.getElementById('display-badge-title').className = `text-[10px] ${badgeColor} px-2 py-0.5 rounded-full font-extrabold shadow-sm`;
+                
+                document.getElementById('badge-level-desc').innerText = levelText;
+                document.getElementById('badge-progress-bar').style.width = progressPercent + '%';
+
+                document.getElementById('header-temp-text').innerText = temp.toFixed(1) + '°C';
+                document.getElementById('header-badge-tag').innerText = badgeTitle.split(' ')[badgeTitle.split(' ').length - 1];
             } else {
                 document.getElementById('auth-form-container').classList.remove('hidden');
                 document.getElementById('auth-success-container').classList.add('hidden');
                 document.getElementById('auth-status-badge').classList.add('hidden');
-                document.getElementById('header-temp-text').innerText = currentUser.mannerTemp.toFixed(1) + '°C';
+                document.getElementById('header-temp-text').innerText = temp.toFixed(1) + '°C';
+                document.getElementById('header-badge-tag').innerText = '입문';
             }
         }
 
@@ -468,8 +652,13 @@
                 document.getElementById('auth-student-id').value = currentUser.studentId || '';
                 document.getElementById('auth-student-name').value = currentUser.name || '';
                 if (currentUser.darkMode === undefined) currentUser.darkMode = true;
+                if (!currentUser.favorites) currentUser.favorites = [
+                    { start: '기흥역 (택시정거장)', dest: '샬롬관', radius: '500m' },
+                    { start: '강남대역', dest: '기숙사(심전1관)', radius: '500m' }
+                ];
                 applyTheme();
                 updateAuthUI();
+                renderFavoritesUI();
             }
         }
 
@@ -494,7 +683,7 @@
                 let s = String(seconds % 60).padStart(2, '0');
                 document.getElementById('waiting-timer').innerText = `${m}:${s}`;
 
-                if (seconds >= 5) {
+                if (seconds >= 4) {
                     clearInterval(waitingTimerInterval);
                     document.getElementById('waiting-panel').classList.add('hidden');
                     completeAutoMatch(start, dest);
@@ -531,7 +720,7 @@
             const container = document.getElementById('pods-container');
             container.innerHTML = '';
 
-            const count = Math.floor(1 + Math.random() * 4);
+            const count = Math.floor(1 + Math.random() * 3);
 
             for (let i = 0; i < count; i++) {
                 const origin = origins[Math.floor(Math.random() * origins.length)];
@@ -574,6 +763,15 @@
 
             alert(`[보증금 1,000원 결제완료]\n${code} 택시동승매칭에 참여하셨습니다. 채팅창으로 이동합니다.`);
             switchTab('history');
+        }
+
+        // (New 1번) Remittance Link Handler
+        function openRemittance(type) {
+            if (type === 'toss') {
+                alert('[토스(Toss) 송금 링크 생성완료]\n클립보드에 정산금 4,800원 송금 링크가 복사되었습니다!');
+            } else {
+                alert('[카카오페이 송금 연동]\n카카오페이 1/N 송금 요청 창으로 이동합니다!');
+            }
         }
 
         // Anti-No-Show & Manner Temperature Features
